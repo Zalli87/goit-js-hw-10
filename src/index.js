@@ -18,7 +18,7 @@ function onInputChange(e) {
   countryName = e.target.value.trim();
   if (e.target.value === '') {
     resetPage();
-    Notiflix.Notify.failure('Add some coyntry name');
+    Notiflix.Notify.failure('Add some country name');
     return;
   }
   fetchCountries(countryName).then(createMarkup).catch(onError);
