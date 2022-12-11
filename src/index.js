@@ -6,11 +6,13 @@ import './css/styles.css';
 const DEBOUNCE_DELAY = 300;
 let countryName = '';
 
-const inputEl = document.querySelector('input#search-box');
-const coutryList = document.querySelector('.country-list');
-const countryCard = document.querySelector('.country-info');
+const refs = {
+  input: document.querySelector('input#search-box'),
+  coutryList: document.querySelector('.country-list'),
+  countryCard: document.querySelector('.country-info'),
+};
 
-inputEl.addEventListener('input', debounce(onInputChange, DEBOUNCE_DELAY));
+refs.input.addEventListener('input', debounce(onInputChange, DEBOUNCE_DELAY));
 
 function onInputChange(e) {
   countryName = e.target.value.trim();
@@ -22,11 +24,23 @@ function onInputChange(e) {
   fetchCountries(countryName).then(createMarkup).catch(onError);
 }
 
-function onError() {
-  Notiflix.Notify.failure('Oops, there is no country with that name');
+function createMarkup(countrys) {
+  if (countrys.length === 1) {
+    resetPage();
+    const countryEl = createCountryCardMarkup(countrys);
+    refs.countryCard.insertAdjacentHTML('afterbegin', countryEl);
+  } else if (countrys.length > 1 && countrys.length <= 10) {
+    resetPage();
+    const countryListEl = createCountrysListMarkup(countrys);
+    refs.coutryList.insertAdjacentHTML('afterbegin', countryListEl);
+  } else if (countrys.length > 10) {
+    Notiflix.Notify.info(
+      'Too many matches found. Please enter a more specific name.'
+    );
+  }
 }
 
-function createCountryCard(countrys) {
+function createCountryCardMarkup(countrys) {
   return countrys
     .map(({ flags, name, capital, population, languages }) => {
       return `<img src='${flags.svg}' width="50" height="50">
@@ -38,23 +52,7 @@ function createCountryCard(countrys) {
     .join('');
 }
 
-function createMarkup(countrys) {
-  if (countrys.length === 1) {
-    resetPage();
-    const countryEl = createCountryCard(countrys);
-    countryCard.insertAdjacentHTML('afterbegin', countryEl);
-  } else if (countrys.length > 1 && countrys.length <= 10) {
-    resetPage();
-    const countryListEl = createCountrysList(countrys);
-    coutryList.insertAdjacentHTML('afterbegin', countryListEl);
-  } else if (countrys.length > 10) {
-    Notiflix.Notify.info(
-      'Too many matches found. Please enter a more specific name.'
-    );
-  }
-}
-
-function createCountrysList(countrys) {
+function createCountrysListMarkup(countrys) {
   return countrys
     .map(({ flags, name }) => {
       return `<li><img src='${flags.svg}' width="50" height="50">
@@ -65,6 +63,10 @@ function createCountrysList(countrys) {
 }
 
 function resetPage() {
-  coutryList.innerHTML = '';
-  countryCard.innerHTML = '';
+  refs.coutryList.innerHTML = '';
+  refs.countryCard.innerHTML = '';
+}
+
+function onError() {
+  Notiflix.Notify.failure('Oops, there is no country with that name');
 }
